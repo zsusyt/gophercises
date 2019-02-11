@@ -106,6 +106,8 @@ func EndHand(gs GameState) GameState {
 	case dScore == pScore:
 		fmt.Println("Draw")
 	}
+	ret.Player = nil
+	ret.Dealer = nil
 	return ret
 }
 
