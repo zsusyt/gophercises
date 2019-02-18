@@ -19,7 +19,7 @@ func main() {
 			return nil
 		}
 		if _, err := match(info.Name()); err == nil {
-			toRename[dir] = append(toRename[dir], info.Name())
+			toRename[path] = append(toRename[path], info.Name())
 		}
 		return nil
 	})
@@ -34,7 +34,7 @@ func main() {
 		sort.Strings(files)
 		for i, filename := range files {
 			res, _ := match(filename)
-			newFilename := fmt.Sprintf("%s - d% of %d.%s", res.base, (i+1), n, res.ext)
+			newFilename := fmt.Sprintf("%s - %d of %d.%s", res.base, (i+1), n, res.ext)
 			oldPath := filepath.Join(dir, filename)
 			newPath := filepath.Join(dir, newFilename)
 			fmt.Printf("mv %s => %s\n", oldPath, newPath)
