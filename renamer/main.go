@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"sort"
 
@@ -12,24 +13,25 @@ import (
 )
 
 func main() {
-	dir := "sample"
+	var dry bool
+	flag.BoolVar(&dry, "dry", true, "whether or not this should be a real or dry run")
+	flag.Parse()
+
+	walkDir := "sample"
 	toRename := make(map[string][]string)
-	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(walkDir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
-		if _, err := match(info.Name()); err == nil {
-			toRename[path] = append(toRename[path], info.Name())
+		curDir := filepath.Dir(path)
+		if m, err := match(info.Name()); err == nil {
+			key := filepath.Join(curDir, fmt.Sprintf("%s.%s", m.base, m.ext))
+			toRename[key] = append(toRename[key], info.Name())
 		}
 		return nil
 	})
-	for _, files := range toRename {
-		for _, file := range files {
-			fmt.Printf("%q\n", file)
-		}
-	}
-
-	for dir, files := range toRename {
+	for key, files := range toRename {
+		dir := filepath.Dir(key)
 		n := len(files)
 		sort.Strings(files)
 		for i, filename := range files {
@@ -38,9 +40,11 @@ func main() {
 			oldPath := filepath.Join(dir, filename)
 			newPath := filepath.Join(dir, newFilename)
 			fmt.Printf("mv %s => %s\n", oldPath, newPath)
-			err := os.Rename(oldPath, newPath)
-			if err != nil {
-				fmt.Println("Error renaming:", oldPath, newPath, err.Error())
+			if !dry {
+				err := os.Rename(oldPath, newPath)
+				if err != nil {
+					fmt.Println("Error renaming:", oldPath, newPath, err.Error())
+				}
 			}
 		}
 
